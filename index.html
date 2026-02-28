@@ -5,146 +5,184 @@
     <script src="https://unpkg.com/jspsych@7.3.4"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
     <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
-        /* Style pour le mode plein écran */
-        #game-container:fullscreen { background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100vw; height: 100vh; }
+        body { background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
         
-        .game-canvas { position: relative; width: 600px; height: 400px; background: white; border-radius: 20px; border: 2px solid #ddd; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .player { position: absolute; width: 100px; text-align: center; font-size: 14px; font-weight: bold; transition: transform 0.2s; }
-        .player img { width: 70px; height: 70px; border-radius: 50%; background: #eee; border: 3px solid #ccc; }
+        /* Zone de jeu adaptative */
+        .game-canvas { 
+            position: relative; 
+            width: 95vw; 
+            max-width: 800px; 
+            height: 60vh; 
+            max-height: 500px;
+            background: white; 
+            border-radius: 20px; 
+            border: 2px solid #ddd; 
+            margin: auto; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            overflow: hidden;
+        }
+
+        .player { position: absolute; width: 80px; text-align: center; font-size: 14px; font-weight: bold; transition: transform 0.2s; z-index: 10; }
+        .player img { width: 60px; height: 60px; border-radius: 50%; background: #eee; border: 3px solid #ccc; }
+        
+        /* Positions adaptatives en % */
+        #pos-julie { top: 10%; left: 50%; transform: translateX(-50%); }
+        #pos-marc { bottom: 15%; left: 10%; }
+        #pos-vous { bottom: 15%; right: 10%; }
+        
         .cliquable { cursor: pointer; }
-        .cliquable:hover { transform: scale(1.1); }
-        .cliquable img { border-color: #007aff; box-shadow: 0 0 15px rgba(0,122,255,0.4); }
-        #pos-julie { top: 20px; left: 250px; }
-        #pos-marc { top: 250px; left: 50px; }
-        #pos-vous { top: 250px; right: 50px; }
-        #ball-sprite { position: absolute; width: 22px; height: 22px; background: radial-gradient(circle, #ff9500, #ff5e00); border-radius: 50%; transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99; top: 80px; left: 290px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .ui-box { margin-top: 20px; height: 40px; text-align: center; color: #666; font-style: italic; }
-        .welcome-box { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 500px; }
-        .connect-container { display: flex; justify-content: space-around; margin: 30px 0; min-height: 100px; }
-        .connect-card { opacity: 0.2; transition: opacity 0.5s; text-align: center; font-size: 12px; }
+        .cliquable:hover { transform: scale(1.1) translateX(0); } /* Correction pour Julie qui a déjà un translate */
+        #pos-julie.cliquable:hover { transform: translateX(-50%) scale(1.1); }
+        
+        .cliquable img { border-color: #007aff; box-shadow: 0 0 15px rgba(0,122,255,0.4); border-width: 4px; }
+        
+        #ball-sprite { 
+            position: absolute; 
+            width: 25px; 
+            height: 25px; 
+            background: radial-gradient(circle, #ff9500, #ff5e00); 
+            border-radius: 50%; 
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            z-index: 99; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            pointer-events: none; /* La balle ne doit pas gêner le clic */
+        }
+
+        .ui-box { margin-top: 15px; height: 30px; text-align: center; color: #007aff; font-weight: bold; }
+        .welcome-box { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 90%; max-width: 500px; }
+        
+        .connect-container { display: flex; justify-content: space-around; margin: 20px 0; }
+        .connect-card { opacity: 0.2; transition: opacity 0.5s; text-align: center; font-size: 11px; }
         .connect-card.active { opacity: 1; }
-        .connect-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #2ecc71; display: block; margin-bottom: 5px; }
-        .status-dot { color: #2ecc71; font-weight: bold; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 10px auto; }
+        .connect-card img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #2ecc71; margin-bottom: 5px; }
+        
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Bouton JsPsych plus gros pour mobile */
+        .jspsych-btn { padding: 15px 30px !important; font-size: 18px !important; border-radius: 30px !important; }
     </style>
 </head>
-<body id="game-container">
+<body>
     <script>
         const totalPassesMax = 40; 
 
         const jsPsych = initJsPsych({
             on_finish: function() {
-                // On quitte le plein écran si nécessaire à la fin
-                if (document.fullscreenElement) { document.exitFullscreen(); }
-                
                 document.body.innerHTML = `
-                    <div style="text-align:center; padding:50px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif; max-width: 600px; margin: auto;">
+                    <div style="text-align:center; padding:30px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif; width:90%; max-width: 500px;">
                         <h2 style="color: #2ecc71;">Partie terminée</h2>
-                        <p style="font-size: 18px;">Merci de votre participation !</p>
-                        <p style="color: #555; line-height: 1.6;">Le jeu est maintenant fini. <strong>Veuillez retourner sur l'onglet de votre questionnaire</strong> pour poursuivre l'étude.</p>
-                        <p style="font-size: 14px; color: #888;">(Vous pouvez fermer cette fenêtre)</p>
+                        <p>Merci de votre participation !</p>
+                        <p style="color: #555; font-size: 15px;">Le jeu est fini. <strong>Retournez sur l'onglet de votre questionnaire</strong> pour continuer.</p>
                     </div>`;
             }
         });
-
-        let passesCompteur = 0;
 
         const welcome = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `
                 <div class="welcome-box">
-                    <p style="font-size: 20px; font-weight: bold;">Prêt pour la tâche de visualisation ?</p>
-                    <p style="color: #555; line-height: 1.5;">Le jeu va s'ouvrir en plein écran pour une meilleure immersion.<br>
-                    Cliquez sur le bouton ci-dessous pour commencer.</p>
+                    <p style="font-size: 18px; font-weight: bold;">Tâche de visualisation interactive</p>
+                    <p style="color: #555;">Cliquez sur les joueurs pour leur envoyer la balle.</p>
                 </div>`,
-            choices: ['Passer en plein écran et commencer'],
-            on_finish: function() {
-                // Activer le plein écran au clic
-                let elem = document.documentElement;
-                if (elem.requestFullscreen) { elem.requestFullscreen(); }
-            }
+            choices: ['Commencer le jeu']
         };
 
         const connection = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `
                 <div class="welcome-box">
-                    <h3>Connexion au serveur...</h3>
+                    <p>Connexion en cours...</p>
                     <div class="connect-container">
-                        <div class="connect-card active"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User">Vous<br><span class="status-dot">● Prêt</span></div>
-                        <div id="card-julie" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie">Julie<br><span id="status-julie">En attente...</span></div>
-                        <div id="card-marc" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc">Marc<br><span id="status-marc">En attente...</span></div>
+                        <div class="connect-card active"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User">Vous</div>
+                        <div id="card-julie" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie">Julie</div>
+                        <div id="card-marc" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc">Marc</div>
                     </div>
                     <div id="global-loader" class="loader"></div>
-                    <p id="global-status">Recherche de partenaires...</p>
                 </div>`,
             choices: [],
-            trial_duration: 6000,
+            trial_duration: 5000,
             on_load: function() {
-                setTimeout(() => { document.getElementById('card-julie').classList.add('active'); document.getElementById('status-julie').innerHTML = "● Connecté"; document.getElementById('status-julie').className = "status-dot"; }, 1800);
-                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('status-marc').innerHTML = "● Connecté"; document.getElementById('status-marc').className = "status-dot"; document.getElementById('global-status').innerHTML = "Session établie !"; document.getElementById('global-loader').style.display = "none"; }, 3800);
+                setTimeout(() => { document.getElementById('card-julie').classList.add('active'); }, 1500);
+                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('global-loader').style.display="none"; }, 3500);
             }
         };
 
         const game_trial = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `
-                <div class="game-canvas">
+                <div class="game-canvas" id="canvas">
                     <div id="pos-julie" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie"><br>Julie</div>
                     <div id="pos-marc" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc"><br>Marc</div>
                     <div id="pos-vous" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User"><br>Vous</div>
                     <div id="ball-sprite"></div>
                 </div>
-                <div class="ui-box"><p id="instruction"></p></div>`,
+                <div class="ui-box" id="instruction"></div>`,
             choices: [],
             on_load: function() {
                 const ball = document.getElementById('ball-sprite');
-                const julieDiv = document.getElementById('pos-julie');
-                const marcDiv = document.getElementById('pos-marc');
-                const instr = document.getElementById('instruction');
-                const coords = {'julie': {top:'80px', left:'290px'}, 'marc': {top:'280px', left:'85px'}, 'vous': {top:'280px', left:'495px'}};
+                const players = {
+                    julie: document.getElementById('pos-julie'),
+                    marc: document.getElementById('pos-marc'),
+                    vous: document.getElementById('pos-vous')
+                };
+                
+                let passes = 0;
+
+                function getCoords(id) {
+                    const el = players[id];
+                    const canvas = document.getElementById('canvas').getBoundingClientRect();
+                    const rect = el.getBoundingClientRect();
+                    // Calcule le centre du joueur par rapport au canvas
+                    return {
+                        x: (rect.left + rect.width / 2) - canvas.left - 12,
+                        y: (rect.top + rect.height / 2) - canvas.top - 12
+                    };
+                }
 
                 function move(target) {
-                    ball.style.top = coords[target].top;
-                    ball.style.left = coords[target].left;
-                    passesCompteur++;
+                    const coords = getCoords(target);
+                    ball.style.left = coords.x + 'px';
+                    ball.style.top = coords.y + 'px';
+                    passes++;
 
-                    julieDiv.classList.remove('cliquable');
-                    marcDiv.classList.remove('cliquable');
-                    julieDiv.onclick = null;
-                    marcDiv.onclick = null;
+                    Object.values(players).forEach(p => { p.classList.remove('cliquable'); p.onclick = null; });
 
-                    if (passesCompteur >= totalPassesMax) {
+                    if (passes >= totalPassesMax) {
                         setTimeout(() => jsPsych.finishTrial(), 2000);
                         return;
                     }
 
                     if (target === 'vous') {
-                        instr.innerHTML = "À vous de jouer.";
+                        document.getElementById('instruction').innerText = "À VOUS DE JOUER";
                         setTimeout(() => {
-                            julieDiv.classList.add('cliquable');
-                            marcDiv.classList.add('cliquable');
-                            julieDiv.onclick = () => move('julie');
-                            marcDiv.onclick = () => move('marc');
-                        }, 1300); 
+                            ['julie', 'marc'].forEach(pId => {
+                                players[pId].classList.add('cliquable');
+                                players[pId].onclick = () => move(pId);
+                            });
+                        }, 1000);
                     } else {
-                        instr.innerHTML = "";
-                        const delaiVariable = Math.floor(Math.random() * 2000) + 1500;
+                        document.getElementById('instruction').innerText = "";
                         setTimeout(() => {
                             let next;
-                            if (passesCompteur <= 15) {
+                            if (passes <= 15) {
                                 next = Math.random() < 0.33 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
                             } else {
                                 next = Math.random() < 0.05 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
                             }
                             move(next);
-                        }, delaiVariable);
+                        }, 2000);
                     }
                 }
-                setTimeout(() => move('julie'), 1500);
+
+                // Position initiale de la balle sur Julie
+                const start = getCoords('julie');
+                ball.style.left = start.x + 'px';
+                ball.style.top = start.y + 'px';
+                
+                setTimeout(() => move('marc'), 1000);
             }
         };
 
