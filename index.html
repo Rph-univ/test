@@ -5,26 +5,42 @@
     <script src="https://unpkg.com/jspsych@7.3.4"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
     <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
-    <meta name="viewport" content="width=650"> <style>
+    <meta name="viewport" content="width=850"> <style>
         body { background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .game-canvas { position: relative; width: 600px; height: 400px; background: white; border-radius: 20px; border: 2px solid #ddd; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .player { position: absolute; width: 100px; text-align: center; font-size: 14px; font-weight: bold; transition: transform 0.2s; }
-        .player img { width: 70px; height: 70px; border-radius: 50%; background: #eee; border: 3px solid #ccc; }
+        
+        /* Cadre agrandi pour plus d'espace */
+        .game-canvas { position: relative; width: 800px; height: 550px; background: white; border-radius: 20px; border: 2px solid #ddd; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        
+        /* Personnages beaucoup plus gros (140px au lieu de 70px) */
+        .player { position: absolute; width: 160px; text-align: center; font-size: 20px; font-weight: bold; transition: transform 0.2s; }
+        .player img { width: 130px; height: 130px; border-radius: 50%; background: #eee; border: 5px solid #ccc; }
+        
         .cliquable { cursor: pointer; }
         .cliquable:hover { transform: scale(1.1); }
-        .cliquable img { border-color: #007aff; box-shadow: 0 0 15px rgba(0,122,255,0.4); }
-        #pos-julie { top: 20px; left: 250px; }
-        #pos-marc { top: 250px; left: 50px; }
-        #pos-vous { top: 250px; right: 50px; }
-        #ball-sprite { position: absolute; width: 22px; height: 22px; background: radial-gradient(circle, #ff9500, #ff5e00); border-radius: 50%; transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99; top: 80px; left: 290px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .ui-box { margin-top: 20px; height: 40px; text-align: center; color: #666; font-style: italic; }
-        .welcome-box { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 500px; }
-        .connect-container { display: flex; justify-content: space-around; margin: 30px 0; min-height: 100px; }
-        .connect-card { opacity: 0.2; transition: opacity 0.5s; text-align: center; font-size: 12px; }
+        
+        /* Bordure bleue plus épaisse pour être bien visible */
+        .cliquable img { border-color: #007aff; box-shadow: 0 0 25px rgba(0,122,255,0.6); border-width: 6px; }
+        
+        /* Positions ajustées pour le nouveau cadre de 800px */
+        #pos-julie { top: 20px; left: 320px; }
+        #pos-marc { top: 350px; left: 40px; }
+        #pos-vous { top: 350px; right: 40px; }
+        
+        /* Balle un peu plus grosse pour la visibilité */
+        #ball-sprite { position: absolute; width: 35px; height: 35px; background: radial-gradient(circle, #ff9500, #ff5e00); border-radius: 50%; transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99; top: 120px; left: 382px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        
+        .ui-box { margin-top: 20px; height: 50px; text-align: center; color: #007aff; font-size: 24px; font-weight: bold; }
+        .welcome-box { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 600px; }
+        
+        /* Boutons JSpsych plus gros */
+        .jspsych-btn { font-size: 22px !important; padding: 15px 40px !important; }
+        
+        .connect-container { display: flex; justify-content: space-around; margin: 30px 0; min-height: 120px; }
+        .connect-card { opacity: 0.2; transition: opacity 0.5s; text-align: center; font-size: 16px; }
         .connect-card.active { opacity: 1; }
-        .connect-card img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid #2ecc71; display: block; margin-bottom: 5px; }
+        .connect-card img { width: 90px; height: 90px; border-radius: 50%; border: 3px solid #2ecc71; display: block; margin-bottom: 10px; }
         .status-dot { color: #2ecc71; font-weight: bold; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; margin: 10px auto; }
+        .loader { border: 6px solid #f3f3f3; border-top: 6px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 10px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -34,11 +50,10 @@
         const jsPsych = initJsPsych({
             on_finish: function() {
                 document.body.innerHTML = `
-                    <div style="text-align:center; padding:50px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif;">
-                        <h2>Partie terminée</h2>
-                        <p>Merci pour votre participation.</p>
-                        <br><br>
-                        <p>Veuillez retourner sur l'onglet de votre questionnaire.</p>
+                    <div style="text-align:center; padding:50px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif; max-width: 700px;">
+                        <h2 style="color: #2ecc71; font-size: 32px;">Partie terminée</h2>
+                        <p style="font-size: 24px;">Merci pour votre participation.</p>
+                        <p style="font-size: 20px; color: #555;">Vous pouvez maintenant fermer cette fenêtre et retourner sur le questionnaire.</p>
                     </div>`;
             }
         });
@@ -49,37 +64,35 @@
             type: jsPsychHtmlButtonResponse,
             stimulus: `
                 <div class="welcome-box">
-                    <p style="font-size: 20px; font-weight: bold;">Êtes-vous prêt pour le jeu ?</p>
-                    <p style="color: #555; line-height: 1.5;">Vous allez faire un jeu de passes avec deux autres personnes.<br>
-                    Pour choisir à qui envoyer le ballon, cliquez sur le joueur sélectionné.</p>
+                    <p style="font-size: 24px; font-weight: bold;">Prêt pour le jeu ?</p>
+                    <p style="font-size: 18px; color: #555;">Cliquez sur l'image d'un joueur pour lui envoyer la balle.</p>
                 </div>`,
-            choices: ['Commencer']
+            choices: ['COMMENCER']
         };
 
         const connection = {
             type: jsPsychHtmlButtonResponse,
             stimulus: `
                 <div class="welcome-box">
-                    <h3>Recherche de joueurs...</h3>
+                    <h3 style="font-size: 24px;">Connexion des joueurs...</h3>
                     <div class="connect-container">
                         <div class="connect-card active"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User">Vous<br><span class="status-dot">● Prêt</span></div>
-                        <div id="card-julie" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie">Julie<br><span id="status-julie">En attente...</span></div>
-                        <div id="card-marc" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc">Marc<br><span id="status-marc">En attente...</span></div>
+                        <div id="card-julie" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie">Julie<br><span id="status-julie">...</span></div>
+                        <div id="card-marc" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc">Marc<br><span id="status-marc">...</span></div>
                     </div>
                     <div id="global-loader" class="loader"></div>
-                    <p id="global-status">Recherche de partenaires de jeu...</p>
                 </div>`,
             choices: [],
             trial_duration: 6000,
             on_load: function() {
-                setTimeout(() => { document.getElementById('card-julie').classList.add('active'); document.getElementById('status-julie').innerHTML = "● Connecté"; document.getElementById('status-julie').className = "status-dot"; }, 1800);
-                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('status-marc').innerHTML = "● Connecté"; document.getElementById('status-marc').className = "status-dot"; document.getElementById('global-status').innerHTML = "Tous les joueurs sont prêts !"; document.getElementById('global-loader').style.display = "none"; }, 3800);
+                setTimeout(() => { document.getElementById('card-julie').classList.add('active'); document.getElementById('status-julie').innerHTML = "● Connecté"; }, 1800);
+                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('status-marc').innerHTML = "● Connecté"; document.getElementById('global-loader').style.display = "none"; }, 3800);
             }
         };
 
         const game_trial = {
             type: jsPsychHtmlButtonResponse,
-            stimulus: `<div class="game-canvas">
+            stimulus: `<div class="game-canvas" id="main-canvas">
                     <div id="pos-julie" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie"><br>Julie</div>
                     <div id="pos-marc" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc"><br>Marc</div>
                     <div id="pos-vous" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User"><br>Vous</div>
@@ -88,48 +101,65 @@
             choices: [],
             on_load: function() {
                 const ball = document.getElementById('ball-sprite');
-                const julieDiv = document.getElementById('pos-julie');
-                const marcDiv = document.getElementById('pos-marc');
+                const players = {
+                    'julie': document.getElementById('pos-julie'),
+                    'marc': document.getElementById('pos-marc'),
+                    'vous': document.getElementById('pos-vous')
+                };
                 const instr = document.getElementById('instruction');
-                const coords = {'julie': {top:'80px', left:'290px'}, 'marc': {top:'280px', left:'85px'}, 'vous': {top:'280px', left:'495px'}};
 
-                function move(target) {
-                    ball.style.top = coords[target].top;
-                    ball.style.left = coords[target].left;
+                function getCenter(el) {
+                    const rect = el.getBoundingClientRect();
+                    const canvas = document.getElementById('main-canvas').getBoundingClientRect();
+                    return {
+                        x: (rect.left + rect.width / 2) - canvas.left - 17, // -17 pour centrer la balle de 35px
+                        y: (rect.top + rect.height / 2) - canvas.top - 17
+                    };
+                }
+
+                function move(targetId) {
+                    const coords = getCenter(players[targetId]);
+                    ball.style.left = coords.x + 'px';
+                    ball.style.top = coords.y + 'px';
                     passesCompteur++;
-                    julieDiv.classList.remove('cliquable');
-                    marcDiv.classList.remove('cliquable');
-                    julieDiv.onclick = null;
-                    marcDiv.onclick = null;
+
+                    players['julie'].classList.remove('cliquable');
+                    players['marc'].classList.remove('cliquable');
+                    players['julie'].onclick = null;
+                    players['marc'].onclick = null;
 
                     if (passesCompteur >= totalPassesMax) {
                         setTimeout(() => jsPsych.finishTrial(), 2500);
                         return;
                     }
 
-                    if (target === 'vous') {
-                        instr.innerHTML = "À vous de jouer.";
+                    if (targetId === 'vous') {
+                        instr.innerHTML = "À VOUS DE JOUER !";
                         setTimeout(() => {
-                            julieDiv.classList.add('cliquable');
-                            marcDiv.classList.add('cliquable');
-                            julieDiv.onclick = () => move('julie');
-                            marcDiv.onclick = () => move('marc');
+                            players['julie'].classList.add('cliquable');
+                            players['marc'].classList.add('cliquable');
+                            players['julie'].onclick = () => move('julie');
+                            players['marc'].onclick = () => move('marc');
                         }, 1300); 
                     } else {
                         instr.innerHTML = "";
-                        const delaiVariable = Math.floor(Math.random() * 3000) + 2500;
                         setTimeout(() => {
                             let next;
                             if (passesCompteur <= 15) {
-                                next = Math.random() < 0.33 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
+                                next = Math.random() < 0.33 ? 'vous' : (targetId === 'julie' ? 'marc' : 'julie');
                             } else {
-                                next = Math.random() < 0.05 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
+                                next = Math.random() < 0.05 ? 'vous' : (targetId === 'julie' ? 'marc' : 'julie');
                             }
                             move(next);
-                        }, delaiVariable);
+                        }, 2500);
                     }
                 }
-                setTimeout(() => move('julie'), 1500);
+
+                // Placement initial sur Julie
+                const initPos = getCenter(players['julie']);
+                ball.style.left = initPos.x + 'px';
+                ball.style.top = initPos.y + 'px';
+                setTimeout(() => move('marc'), 1500);
             }
         };
 
