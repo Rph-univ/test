@@ -5,50 +5,20 @@
     <script src="https://unpkg.com/jspsych@7.3.4"></script>
     <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.3"></script>
     <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <style>
-        body { background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        
-        /* CADRE DU JEU : Adaptatif pour téléphone */
-        .game-canvas { 
-            position: relative; 
-            width: 95vw; /* 95% de la largeur de l'écran */
-            max-width: 600px; /* Mais pas plus de 600px sur PC */
-            height: 400px; 
-            background: white; 
-            border-radius: 20px; 
-            border: 2px solid #ddd; 
-            margin: auto; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-        }
-
+    <meta name="viewport" content="width=650"> <style>
+        body { background-color: #f0f2f5; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .game-canvas { position: relative; width: 600px; height: 400px; background: white; border-radius: 20px; border: 2px solid #ddd; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .player { position: absolute; width: 100px; text-align: center; font-size: 14px; font-weight: bold; transition: transform 0.2s; }
         .player img { width: 70px; height: 70px; border-radius: 50%; background: #eee; border: 3px solid #ccc; }
         .cliquable { cursor: pointer; }
         .cliquable:hover { transform: scale(1.1); }
         .cliquable img { border-color: #007aff; box-shadow: 0 0 15px rgba(0,122,255,0.4); }
-
-        /* POSITIONS AJUSTÉES POUR TOUS LES ÉCRANS */
-        #pos-julie { top: 20px; left: 50%; transform: translateX(-50%); }
-        #pos-marc { top: 250px; left: 5%; }
-        #pos-vous { top: 250px; right: 5%; }
-        
-        #ball-sprite { 
-            position: absolute; 
-            width: 22px; 
-            height: 22px; 
-            background: radial-gradient(circle, #ff9500, #ff5e00); 
-            border-radius: 50%; 
-            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 99; 
-            top: 80px; 
-            left: 50%; 
-            transform: translateX(-50%);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-        }
-
+        #pos-julie { top: 20px; left: 250px; }
+        #pos-marc { top: 250px; left: 50px; }
+        #pos-vous { top: 250px; right: 50px; }
+        #ball-sprite { position: absolute; width: 22px; height: 22px; background: radial-gradient(circle, #ff9500, #ff5e00); border-radius: 50%; transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 99; top: 80px; left: 290px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .ui-box { margin-top: 20px; height: 40px; text-align: center; color: #666; font-style: italic; }
-        .welcome-box { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); width: 90%; max-width: 500px; }
+        .welcome-box { text-align: center; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 500px; }
         .connect-container { display: flex; justify-content: space-around; margin: 30px 0; min-height: 100px; }
         .connect-card { opacity: 0.2; transition: opacity 0.5s; text-align: center; font-size: 12px; }
         .connect-card.active { opacity: 1; }
@@ -61,14 +31,14 @@
 <body>
     <script>
         const totalPassesMax = 40; 
-
         const jsPsych = initJsPsych({
             on_finish: function() {
                 document.body.innerHTML = `
-                    <div style="text-align:center; padding:50px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif; max-width: 600px; width: 90%;">
-                        <h2 style="color: #2ecc71;">Partie terminée</h2>
-                        <p style="font-size: 18px;">Merci de votre participation !</p>
-                        <p style="color: #555; line-height: 1.6;">Le jeu est maintenant fini. <strong>Veuillez retourner sur l'onglet de votre questionnaire</strong> pour poursuivre l'étude.</p>
+                    <div style="text-align:center; padding:50px; background:white; border-radius:20px; box-shadow:0 5px 15px rgba(0,0,0,0.1); font-family:sans-serif;">
+                        <h2>Partie terminée</h2>
+                        <p>Merci pour votre participation.</p>
+                        <br><br>
+                        <p>Veuillez retourner sur l'onglet de votre questionnaire.</p>
                     </div>`;
             }
         });
@@ -79,8 +49,9 @@
             type: jsPsychHtmlButtonResponse,
             stimulus: `
                 <div class="welcome-box">
-                    <p style="font-size: 20px; font-weight: bold;">Êtes-vous prêt ?</p>
-                    <p style="color: #555;">Cliquez sur le joueur de votre choix pour lui envoyer la balle.</p>
+                    <p style="font-size: 20px; font-weight: bold;">Êtes-vous prêt pour le jeu ?</p>
+                    <p style="color: #555; line-height: 1.5;">Vous allez faire un jeu de passes avec deux autres personnes.<br>
+                    Pour choisir à qui envoyer le ballon, cliquez sur le joueur sélectionné.</p>
                 </div>`,
             choices: ['Commencer']
         };
@@ -96,60 +67,47 @@
                         <div id="card-marc" class="connect-card"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc">Marc<br><span id="status-marc">En attente...</span></div>
                     </div>
                     <div id="global-loader" class="loader"></div>
+                    <p id="global-status">Recherche de partenaires de jeu...</p>
                 </div>`,
             choices: [],
             trial_duration: 6000,
             on_load: function() {
                 setTimeout(() => { document.getElementById('card-julie').classList.add('active'); document.getElementById('status-julie').innerHTML = "● Connecté"; document.getElementById('status-julie').className = "status-dot"; }, 1800);
-                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('status-marc').innerHTML = "● Connecté"; document.getElementById('status-marc').className = "status-dot"; document.getElementById('global-loader').style.display = "none"; }, 3800);
+                setTimeout(() => { document.getElementById('card-marc').classList.add('active'); document.getElementById('status-marc').innerHTML = "● Connecté"; document.getElementById('status-marc').className = "status-dot"; document.getElementById('global-status').innerHTML = "Tous les joueurs sont prêts !"; document.getElementById('global-loader').style.display = "none"; }, 3800);
             }
         };
 
         const game_trial = {
             type: jsPsychHtmlButtonResponse,
-            stimulus: `
-                <div class="game-canvas" id="canvas">
+            stimulus: `<div class="game-canvas">
                     <div id="pos-julie" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Julie"><br>Julie</div>
                     <div id="pos-marc" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marc"><br>Marc</div>
                     <div id="pos-vous" class="player"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=User"><br>Vous</div>
                     <div id="ball-sprite"></div>
-                </div>
-                <div class="ui-box"><p id="instruction"></p></div>`,
+                </div><div class="ui-box"><p id="instruction"></p></div>`,
             choices: [],
             on_load: function() {
                 const ball = document.getElementById('ball-sprite');
                 const julieDiv = document.getElementById('pos-julie');
                 const marcDiv = document.getElementById('pos-marc');
-                const vousDiv = document.getElementById('pos-vous');
                 const instr = document.getElementById('instruction');
+                const coords = {'julie': {top:'80px', left:'290px'}, 'marc': {top:'280px', left:'85px'}, 'vous': {top:'280px', left:'495px'}};
 
-                function getCenter(el) {
-                    const rect = el.getBoundingClientRect();
-                    const canvas = document.getElementById('canvas').getBoundingClientRect();
-                    return {
-                        x: (rect.left + rect.width / 2) - canvas.left - 11,
-                        y: (rect.top + rect.height / 2) - canvas.top - 11
-                    };
-                }
-
-                function move(targetId) {
-                    const targetEl = document.getElementById('pos-' + targetId);
-                    const coords = getCenter(targetEl);
-                    ball.style.left = coords.x + 'px';
-                    ball.style.top = coords.y + 'px';
+                function move(target) {
+                    ball.style.top = coords[target].top;
+                    ball.style.left = coords[target].left;
                     passesCompteur++;
-
                     julieDiv.classList.remove('cliquable');
                     marcDiv.classList.remove('cliquable');
                     julieDiv.onclick = null;
                     marcDiv.onclick = null;
 
                     if (passesCompteur >= totalPassesMax) {
-                        setTimeout(() => jsPsych.finishTrial(), 2000);
+                        setTimeout(() => jsPsych.finishTrial(), 2500);
                         return;
                     }
 
-                    if (targetId === 'vous') {
+                    if (target === 'vous') {
                         instr.innerHTML = "À vous de jouer.";
                         setTimeout(() => {
                             julieDiv.classList.add('cliquable');
@@ -159,22 +117,19 @@
                         }, 1300); 
                     } else {
                         instr.innerHTML = "";
+                        const delaiVariable = Math.floor(Math.random() * 3000) + 2500;
                         setTimeout(() => {
                             let next;
                             if (passesCompteur <= 15) {
-                                next = Math.random() < 0.33 ? 'vous' : (targetId === 'julie' ? 'marc' : 'julie');
+                                next = Math.random() < 0.33 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
                             } else {
-                                next = Math.random() < 0.05 ? 'vous' : (targetId === 'julie' ? 'marc' : 'julie');
+                                next = Math.random() < 0.05 ? 'vous' : (target === 'julie' ? 'marc' : 'julie');
                             }
                             move(next);
-                        }, 2000);
+                        }, delaiVariable);
                     }
                 }
-                // Placement initial de la balle sur Julie
-                const start = getCenter(julieDiv);
-                ball.style.left = start.x + 'px';
-                ball.style.top = start.y + 'px';
-                setTimeout(() => move('marc'), 1500);
+                setTimeout(() => move('julie'), 1500);
             }
         };
 
